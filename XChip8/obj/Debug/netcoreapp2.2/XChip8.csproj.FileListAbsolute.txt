@@ -1,0 +1,11 @@
+/home/arjun/projects/dotnet/Chip8/XChip8/bin/Debug/netcoreapp2.2/XChip8.deps.json
+/home/arjun/projects/dotnet/Chip8/XChip8/bin/Debug/netcoreapp2.2/XChip8.runtimeconfig.json
+/home/arjun/projects/dotnet/Chip8/XChip8/bin/Debug/netcoreapp2.2/XChip8.runtimeconfig.dev.json
+/home/arjun/projects/dotnet/Chip8/XChip8/bin/Debug/netcoreapp2.2/XChip8.dll
+/home/arjun/projects/dotnet/Chip8/XChip8/bin/Debug/netcoreapp2.2/XChip8.pdb
+/home/arjun/projects/dotnet/Chip8/XChip8/obj/Debug/netcoreapp2.2/XChip8.csprojAssemblyReference.cache
+/home/arjun/projects/dotnet/Chip8/XChip8/obj/Debug/netcoreapp2.2/XChip8.csproj.CoreCompileInputs.cache
+/home/arjun/projects/dotnet/Chip8/XChip8/obj/Debug/netcoreapp2.2/XChip8.AssemblyInfoInputs.cache
+/home/arjun/projects/dotnet/Chip8/XChip8/obj/Debug/netcoreapp2.2/XChip8.AssemblyInfo.cs
+/home/arjun/projects/dotnet/Chip8/XChip8/obj/Debug/netcoreapp2.2/XChip8.dll
+/home/arjun/projects/dotnet/Chip8/XChip8/obj/Debug/netcoreapp2.2/XChip8.pdb

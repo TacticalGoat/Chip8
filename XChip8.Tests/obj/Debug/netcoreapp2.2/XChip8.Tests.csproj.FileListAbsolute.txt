@@ -1,0 +1,17 @@
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/bin/Debug/netcoreapp2.2/xunit.runner.visualstudio.dotnetcore.testadapter.dll
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/bin/Debug/netcoreapp2.2/xunit.runner.reporters.netcoreapp10.dll
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/bin/Debug/netcoreapp2.2/xunit.runner.utility.netcoreapp10.dll
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/bin/Debug/netcoreapp2.2/XChip8.Tests.deps.json
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/bin/Debug/netcoreapp2.2/XChip8.Tests.runtimeconfig.json
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/bin/Debug/netcoreapp2.2/XChip8.Tests.runtimeconfig.dev.json
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/bin/Debug/netcoreapp2.2/XChip8.Tests.dll
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/bin/Debug/netcoreapp2.2/XChip8.Tests.pdb
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/bin/Debug/netcoreapp2.2/XChip8.dll
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/bin/Debug/netcoreapp2.2/XChip8.pdb
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/obj/Debug/netcoreapp2.2/XChip8.Tests.csprojAssemblyReference.cache
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/obj/Debug/netcoreapp2.2/XChip8.Tests.csproj.CoreCompileInputs.cache
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/obj/Debug/netcoreapp2.2/XChip8.Tests.AssemblyInfoInputs.cache
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/obj/Debug/netcoreapp2.2/XChip8.Tests.AssemblyInfo.cs
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/obj/Debug/netcoreapp2.2/XChip8.Tests.csproj.CopyComplete
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/obj/Debug/netcoreapp2.2/XChip8.Tests.dll
+/home/arjun/projects/dotnet/Chip8/XChip8.Tests/obj/Debug/netcoreapp2.2/XChip8.Tests.pdb

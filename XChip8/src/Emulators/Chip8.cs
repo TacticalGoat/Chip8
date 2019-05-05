@@ -12,7 +12,7 @@ namespace XChip8.Emulators
         public byte ST { get; private set; }
         public byte DT { get; private set; }
         public ushort PC { get; private set; }
-        public bool[,] Screen { get; private set; }
+        public bool[, ] Screen { get; private set; }
         public short SP { get; private set; }
         public ushort[] Stack { get; private set; }
         Random rand;
@@ -61,14 +61,14 @@ namespace XChip8.Emulators
                 //Groups 2 elements at once
                 .GroupBy(x => x.Index / 2)
                 //Converts two bytes into an instruction
-                .Select(x => (ushort)(((x.ElementAt(0).Value << 8) | x.ElementAt(1).Value) & 0xFFFF))
+                .Select(x => (ushort) (((x.ElementAt(0).Value << 8) | x.ElementAt(1).Value) & 0xFFFF))
                 //Converts to array
                 .ToArray();
         }
 
         private ushort fetchCurrentOpcode()
         {
-            return (ushort)(((Memory[PC] << 8) | Memory[PC + 1]) & 0xFFFF);
+            return (ushort) (((Memory[PC] << 8) | Memory[PC + 1]) & 0xFFFF);
         }
 
         private void advancePC()
@@ -98,14 +98,14 @@ namespace XChip8.Emulators
 
         public void JP(ushort opcode)
         {
-            PC = (ushort)(opcode & 0x0FFF);
+            PC = (ushort) (opcode & 0x0FFF);
         }
 
         public void Call(ushort opcode)
         {
             SP += 1;
             Stack[SP] = PC;
-            PC = (ushort)(opcode & 0x0FFF);
+            PC = (ushort) (opcode & 0x0FFF);
         }
 
         public void SE(ushort opcode)
@@ -115,7 +115,7 @@ namespace XChip8.Emulators
             {
                 case 3:
                     var kk = getKk(opcode);
-                    if (V[x] == (byte)kk)
+                    if (V[x] == (byte) kk)
                         advancePC();
                     break;
                 case 5:
@@ -131,18 +131,18 @@ namespace XChip8.Emulators
         {
             var x = getVx(opcode);
             var kk = getKk(opcode);
-            if (V[x] != (byte)kk)
+            if (V[x] != (byte) kk)
                 advancePC();
         }
 
         public void LD(ushort opcode)
         {
             int x = getVx(opcode);
-            switch((opcode & 0xF000) >> 12)
+            switch ((opcode & 0xF000) >> 12)
             {
                 case 6:
                     int kk = getKk(opcode);
-                    V[x] = (byte)kk;
+                    V[x] = (byte) kk;
                     break;
                 case 8:
                     int y = getVy(opcode);
@@ -155,7 +155,7 @@ namespace XChip8.Emulators
         {
             var x = getVx(opcode);
             var sum = 0;
-            switch((opcode & 0xF000) >> 12)
+            switch ((opcode & 0xF000) >> 12)
             {
                 case 7:
                     var kk = getKk(opcode);
@@ -166,29 +166,29 @@ namespace XChip8.Emulators
                     sum = V[x] + V[y];
                     break;
             }
-            V[0xF] = (byte)(sum > 255 ? 1 : 0);
-            V[x] = (byte)(sum);
+            V[0xF] = (byte) (sum > 255 ? 1 : 0);
+            V[x] = (byte) (sum);
         }
 
         public void Or(ushort opcode)
         {
             var x = getVx(opcode);
             var y = getVy(opcode);
-            V[x] = (byte)(V[x] | V[y]);
+            V[x] = (byte) (V[x] | V[y]);
         }
 
         public void And(ushort opcode)
         {
             var x = getVx(opcode);
             var y = getVy(opcode);
-            V[x] = (byte)(V[x] & V[y]);
+            V[x] = (byte) (V[x] & V[y]);
         }
 
         public void Xor(ushort opcode)
         {
             var x = getVx(opcode);
             var y = getVy(opcode);
-            V[x] = (byte)(V[x] ^ V[y]);
+            V[x] = (byte) (V[x] ^ V[y]);
         }
 
         public void Sub(ushort opcode)
@@ -196,17 +196,16 @@ namespace XChip8.Emulators
             var x = getVx(opcode);
             var y = getVy(opcode);
             var diff = V[x] - V[y];
-            V[0xF] = (byte)(V[x] > V[y] ? 1 : 0);
-            V[x] = (byte)diff;
+            V[0xF] = (byte) (V[x] > V[y] ? 1 : 0);
+            V[x] = (byte) diff;
         }
 
         public void SHR(ushort opcode)
         {
             var x = getVx(opcode);
-            V[0xF] = (byte)((V[x] & 0x0001) == 1 ? 1 : 0);
-            V[x] = (byte)(V[x] >> 1);
+            V[0xF] = (byte) ((V[x] & 0x0001) == 1 ? 1 : 0);
+            V[x] = (byte) (V[x] >> 1);
         }
-
 
     }
 }

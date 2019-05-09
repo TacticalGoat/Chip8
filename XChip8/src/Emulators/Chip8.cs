@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -29,6 +30,48 @@ namespace XChip8.Emulators
             Screen = new bool[64, 32];
             Stack = new ushort[16];
             rand = new Random();
+        }
+
+        private void initFonts()
+        {
+            var fontSet = new byte[][]
+            {
+                new byte[] { 0xF0, 0x90, 0x90, 0x90, 0xF0 }, // 0
+                new byte[] { 0x20, 0x60, 0x60, 0x60, 0x70 }, // 1
+                new byte[] { 0xF0, 0x10, 0xF0, 0x80, 0xF0 }, // 2
+                new byte[] { 0xF0, 0x10, 0xF0, 0x10, 0xF0 }, // 3
+                new byte[] { 0x90, 0x90, 0xF0, 0x10, 0x10 }, // 4
+                new byte[] { 0xF0, 0x80, 0xF0, 0x10, 0xF0 }, // 5
+                new byte[] { 0xF0, 0x80, 0xF0, 0x90, 0xF0 }, // 6
+                new byte[] { 0xF0, 0x10, 0x20, 0x40, 0x40 }, // 7
+                new byte[] { 0xF0, 0x90, 0xF0, 0x90, 0xF0 }, // 8
+                new byte[] { 0xF0, 0x90, 0xF0, 0x10, 0x10 }, // 9
+                new byte[] { 0xF0, 0x90, 0xF0, 0x90, 0x90 }, // A
+                new byte[] { 0xE0, 0x90, 0xE0, 0x90, 0xE0 }, // B
+                new byte[] { 0xF0, 0x80, 0x80, 0x80, 0xF0 }, // C
+                new byte[] { 0xE0, 0x90, 0x90, 0x90, 0xE0 }, // D
+                new byte[] { 0xF0, 0x80, 0xE0, 0x80, 0xEF }, // E
+                new byte[] { 0xF0, 0x80, 0xE0, 0x80, 0x80 }, // F
+            };
+            int j = 0;
+            for (int i = 0; i < 64; i += 4)
+            {
+                loadFont(i, fontSet[j]);
+                j++;
+            }
+        }
+
+        private int getMemoryLocationForChar(byte char_)
+        {
+            return char_ * 4;
+        }
+
+        private void loadFont(int start, byte[] sprite)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                Memory[start + i] = sprite[i];
+            }
         }
 
         public bool LoadRom(string path)
@@ -66,8 +109,10 @@ namespace XChip8.Emulators
                 .ToArray();
         }
 
-        private ushort fetchCurrentOpcode()
+        p
+        de()
         {
+
             return (ushort) (((Memory[PC] << 8) | Memory[PC + 1]) & 0xFFFF);
         }
 
@@ -90,15 +135,36 @@ namespace XChip8.Emulators
             return (opcode & 0x00F0) >> 4;
         }
 
-        // Get last two bytes
+        // Get second byte
         private int getKk(ushort opcode)
         {
             return (opcode & 0x00FF);
         }
 
+        // Get Last 3 nibbles i,e Xnnn this method gets nnn
+        private int getNnn(ushort opcode)
+        {
+            return (opcode & 0x0FFF);
+        }
+
         public void JP(ushort opcode)
         {
-            PC = (ushort) (opcode & 0x0FFF);
+            switch ((opcode & 0xF000) >> 12)
+            {
+                case 1:
+                    PC = (ushort) getNnn(opcode);
+                    break;
+                case 0xB:
+                    var addr = getNnn(opcode) + V[0];
+                    PC = (ushort) addr;
+                    break;
+            }
+        }
+
+        public void RET()
+        {
+            PC = Stack[SP];
+            SP--;
         }
 
         public void Call(ushort opcode)
@@ -130,9 +196,19 @@ namespace XChip8.Emulators
         public void SNE(ushort opcode)
         {
             var x = getVx(opcode);
-            var kk = getKk(opcode);
-            if (V[x] != (byte) kk)
-                advancePC();
+            switch ((opcode & 0xF000) >> 12)
+            {
+                case 4:
+                    var kk = getKk(opcode);
+                    if (V[x] != (byte) kk)
+                        advancePC();
+                    break;
+                case 9:
+                    var y = getVy(opcode);
+                    if (V[x] != V[y])
+                        advancePC();
+                    break;
+            }
         }
 
         public void LD(ushort opcode)
@@ -149,6 +225,7 @@ namespace XChip8.Emulators
                     V[x] = V[y];
                     break;
             }
+
         }
 
         public void Add(ushort opcode)
@@ -196,7 +273,15 @@ namespace XChip8.Emulators
             var x = getVx(opcode);
             var y = getVy(opcode);
             var diff = V[x] - V[y];
-            V[0xF] = (byte) (V[x] > V[y] ? 1 : 0);
+            switch (opcode & 0x000F)
+            {
+                case 5:
+                    V[0xF] = (byte) (V[y] > V[x] ? 1 : 0);
+                    break;
+                case 7:
+                    V[0xF] = (byte) (V[x] > V[y] ? 1 : 0);
+                    break;
+            }
             V[x] = (byte) diff;
         }
 
@@ -207,5 +292,72 @@ namespace XChip8.Emulators
             V[x] = (byte) (V[x] >> 1);
         }
 
+        public void SHL(ushort opcode)
+        {
+            var x = getVx(opcode);
+            V[0xF] = (byte) (((V[x] & 0x8000) >> 12) == 1 ? 1 : 0);
+            V[x] = (byte) (V[x] << 1);
+        }
+
+        public void LDI(ushort opcode)
+        {
+            var nnn = getNnn(opcode);
+            I = (ushort) nnn;
+        }
+        public void RND(ushort opcode)
+        {
+            var b = (byte) rand.Next(255);
+            var kk = getKk(opcode);
+            var x = getVx(opcode);
+            V[x] = (byte) (b & kk);
+        }
+
+        public void LDDT(ushort opcode)
+        {
+            var x = getVx(opcode);
+            V[x] = DT;
+        }
+
+        public void STDT(ushort opcode)
+        {
+            var x = getVx(opcode);
+            DT = V[x];
+        }
+
+        public void STST(ushort opcode)
+        {
+            var x = getVx(opcode);
+            ST = V[x];
+        }
+
+        public void ADDI(ushort opcode)
+        {
+            var x = getVx(opcode);
+            I = (ushort) (I + V[x]);
+        }
+
+        public void STRegs(ushort opcode)
+        {
+            var x = getVx(opcode);
+            for (int i = 0; i <= x; i++)
+            {
+                Memory[I + i] = V[i];
+            }
+        }
+
+        public void LDRegs(ushort opcode)
+        {
+            var x = getVx(opcode);
+            for (int i = 0; i <= x; i++)
+            {
+                V[i] = Memory[I + i];
+            }
+        }
+
+        public void LDFI(ushort opcode)
+        {
+            var x = getVx(opcode);
+            I = (ushort)getMemoryLocationForChar(V[x]);
+        }
     }
 }

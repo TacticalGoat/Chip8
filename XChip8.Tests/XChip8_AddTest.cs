@@ -41,5 +41,7 @@ namespace XChip8.UnitTests.Emulators
             else
                 Assert.Equal(_chip8.V[0xF], 0);
         }
+
+        // TODO dedicated Carry Flag tests
     }
 }

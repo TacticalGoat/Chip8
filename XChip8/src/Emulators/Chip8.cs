@@ -13,7 +13,7 @@ namespace XChip8.Emulators
         public byte ST { get; private set; }
         public byte DT { get; private set; }
         public ushort PC { get; private set; }
-        public bool[, ] Screen { get; private set; }
+        public bool[, ] ScreenState { get; private set; }
         public short SP { get; private set; }
         public ushort[] Stack { get; private set; }
         Random rand;
@@ -27,9 +27,10 @@ namespace XChip8.Emulators
             DT = 0;
             PC = 0x200;
             SP = -1;
-            Screen = new bool[64, 32];
+            ScreenState = new bool[64, 32];
             Stack = new ushort[16];
             rand = new Random();
+            initFonts();
         }
 
         private void initFonts()
@@ -37,7 +38,7 @@ namespace XChip8.Emulators
             var fontSet = new byte[][]
             {
                 new byte[] { 0xF0, 0x90, 0x90, 0x90, 0xF0 }, // 0
-                new byte[] { 0x20, 0x60, 0x60, 0x60, 0x70 }, // 1
+                new byte[] { 0x20, 0x60, 0x20, 0x20, 0x70 }, // 1
                 new byte[] { 0xF0, 0x10, 0xF0, 0x80, 0xF0 }, // 2
                 new byte[] { 0xF0, 0x10, 0xF0, 0x10, 0xF0 }, // 3
                 new byte[] { 0x90, 0x90, 0xF0, 0x10, 0x10 }, // 4
@@ -50,11 +51,11 @@ namespace XChip8.Emulators
                 new byte[] { 0xE0, 0x90, 0xE0, 0x90, 0xE0 }, // B
                 new byte[] { 0xF0, 0x80, 0x80, 0x80, 0xF0 }, // C
                 new byte[] { 0xE0, 0x90, 0x90, 0x90, 0xE0 }, // D
-                new byte[] { 0xF0, 0x80, 0xE0, 0x80, 0xEF }, // E
-                new byte[] { 0xF0, 0x80, 0xE0, 0x80, 0x80 }, // F
+                new byte[] { 0xF0, 0x80, 0xE0, 0x80, 0xF0 }, // E
+                new byte[] { 0xF0, 0x80, 0xE0, 0x80, 0x80 }  // F
             };
             int j = 0;
-            for (int i = 0; i < 64; i += 4)
+            for (int i = 0; i < 76; i += 5)
             {
                 loadFont(i, fontSet[j]);
                 j++;
@@ -63,7 +64,7 @@ namespace XChip8.Emulators
 
         private int getMemoryLocationForChar(byte char_)
         {
-            return char_ * 4;
+            return char_ * 5;
         }
 
         private void loadFont(int start, byte[] sprite)
@@ -109,13 +110,7 @@ namespace XChip8.Emulators
                 .ToArray();
         }
 
-        p
-        de()
-        {
-
-            return (ushort) (((Memory[PC] << 8) | Memory[PC + 1]) & 0xFFFF);
-        }
-
+        
         private void advancePC()
         {
             PC += 2;
@@ -145,6 +140,28 @@ namespace XChip8.Emulators
         private int getNnn(ushort opcode)
         {
             return (opcode & 0x0FFF);
+        }
+
+        public void DrawSprite(byte[] sprite, int col, int row)
+        {
+            for (int i = 0; i < sprite.Length; i++)
+            {
+                for (int j = 7; j >= 0; j--)
+                {
+                    var old_pixel = ScreenState[col + (7 - j), row + i] ? 1 : 0;
+                    var sprite_pixel = sprite[i] >> j & 1;
+                    if (old_pixel == 1 && sprite_pixel == 1)
+                        V[0xF] = 1;
+                    else
+                        V[0xF] = 0;
+                    ScreenState[col + (7 - j), row + i] = (old_pixel ^ sprite_pixel) == 1 ? true : false;
+                }
+            }
+        }
+
+        private byte[] loadSprite(int n)
+        {
+            return Memory.Skip(I).Take(n).ToArray();
         }
 
         public void JP(ushort opcode)
@@ -357,7 +374,17 @@ namespace XChip8.Emulators
         public void LDFI(ushort opcode)
         {
             var x = getVx(opcode);
-            I = (ushort)getMemoryLocationForChar(V[x]);
+            I = (ushort) getMemoryLocationForChar(V[x]);
         }
+
+        public void DRW(ushort opcode)
+        {
+            var x = getVx(opcode);
+            var y = getVy(opcode);
+            var n = opcode & 0x000F;
+            var sprite = loadSprite(n);
+            DrawSprite(sprite, V[x], V[y]);
+        }
+
     }
 }

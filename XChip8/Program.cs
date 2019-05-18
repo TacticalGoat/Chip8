@@ -2,6 +2,7 @@
 using XChip8.Systems;
 using XChip8.Emulators;
 using XChip8.Renderers;
+using XChip8.Input;
 
 namespace XChip8
 {
@@ -10,9 +11,10 @@ namespace XChip8
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            var emu = new Chip8();
             var rend = new Renderer();
-            var system = new XChip8.Systems.System(emu, rend);
+            var inp = new Input.Input();
+            var emu = new Chip8(rend, inp);
+            var system = new XChip8.Systems.System(emu);
             system.test_font();
             Console.ReadLine();
         }

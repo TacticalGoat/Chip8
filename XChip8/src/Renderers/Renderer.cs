@@ -6,18 +6,19 @@ namespace XChip8.Renderers
 {
     public class Renderer
     {
-        public bool[, ] ScreenState;
         public bool Collision;
         private IntPtr window;
         private IntPtr sdlRenderer;
         private int height;
         private int width;
 
+        private SDL.SDL_Rect pixelRect;
+
         public Renderer(int width = 64, int height = 32)
         {
             this.height = height * 10;
             this.width = width * 10;
-            SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING);
+            SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
             window = IntPtr.Zero;
             window = SDL.SDL_CreateWindow(
                 "XChip8",
@@ -26,14 +27,14 @@ namespace XChip8.Renderers
                 this.width,
                 this.height,
                 SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL
+                |SDL.SDL_WindowFlags.SDL_WINDOW_ALWAYS_ON_TOP
             );
             sdlRenderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_SOFTWARE);
-            ScreenState = new bool[64, 32];
             Collision = false;
+            pixelRect = new SDL.SDL_Rect();
+            pixelRect.h = 10;
+            pixelRect.w = 10;
         }
-
-        public void BlankScreen() => ScreenState = new bool[64, 32];
-
         public void BlankWindow()
         {
             SDL.SDL_RenderSetLogicalSize(sdlRenderer, width, height);
@@ -53,25 +54,23 @@ namespace XChip8.Renderers
             SDL.SDL_RenderFillRect(sdlRenderer, ref rect);
             SDL.SDL_RenderPresent(sdlRenderer);
         }
-        public void DrawSprite(byte[] sprite, int col, int row)
+
+        public void ClearPixel(int col, int row)
         {
-            for (int i = 0; i < sprite.Length; i++)
-            {
-                for (int j = 0; j < col; j++)
-                {
-                    var old_pixel = ScreenState[col + j, row + i] ? 1 : 0;
-                    var sprite_pixel = sprite[i] >> j & 1;
-                    if (old_pixel == 1 && sprite_pixel == 1)
-                        Collision = true;
-                    else
-                        Collision = false;
-                    ScreenState[col + j, row + i] = (old_pixel ^ sprite_pixel) == 1 ? true : false;
-                }
-            }
+            SDL.SDL_SetRenderDrawColor(sdlRenderer, 0x00, 0x00, 0x00, 0xFF);
+            //SDL.SDL_Rect rect;
+            pixelRect.x = col * 10;
+            pixelRect.y = row * 10;
+            // rect.h = 10;
+            // rect.w = 10;
+            SDL.SDL_RenderDrawRect(sdlRenderer, ref pixelRect);
+            SDL.SDL_RenderFillRect(sdlRenderer, ref pixelRect);
+            SDL.SDL_RenderPresent(sdlRenderer);
         }
 
         public void RenderScreen(bool[,] ScreenState)
         {
+            BlankWindow();
             for (var col = 0; col < 64; col++)
             {
                 for (var row = 0; row < 32; row++)

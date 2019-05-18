@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using SDL2;
+using XChip8.Input;
+using XChip8.Renderers;
 
 namespace XChip8.Emulators
 {
@@ -9,16 +12,21 @@ namespace XChip8.Emulators
     {
         public byte[] Memory { get; private set; }
         public byte[] V { get; private set; }
-        public ushort I { get; private set; }
+        public ushort I { get; set; }
         public byte ST { get; private set; }
         public byte DT { get; private set; }
         public ushort PC { get; private set; }
         public bool[, ] ScreenState { get; private set; }
         public short SP { get; private set; }
         public ushort[] Stack { get; private set; }
+
+        public bool ScreenStateChanged = false;
         Random rand;
 
-        public Chip8()
+        private Renderer renderer;
+        public Input.Input input;
+
+        public Chip8(Renderer renderer, Input.Input input)
         {
             Memory = new byte[4096];
             V = new byte[16];
@@ -31,6 +39,8 @@ namespace XChip8.Emulators
             Stack = new ushort[16];
             rand = new Random();
             initFonts();
+            this.renderer = renderer;
+            this.input = input;
         }
 
         private void initFonts()
@@ -52,7 +62,7 @@ namespace XChip8.Emulators
                 new byte[] { 0xF0, 0x80, 0x80, 0x80, 0xF0 }, // C
                 new byte[] { 0xE0, 0x90, 0x90, 0x90, 0xE0 }, // D
                 new byte[] { 0xF0, 0x80, 0xE0, 0x80, 0xF0 }, // E
-                new byte[] { 0xF0, 0x80, 0xE0, 0x80, 0x80 }  // F
+                new byte[] { 0xF0, 0x80, 0xE0, 0x80, 0x80 } // F
             };
             int j = 0;
             for (int i = 0; i < 76; i += 5)
@@ -110,10 +120,14 @@ namespace XChip8.Emulators
                 .ToArray();
         }
 
-        
-        private void advancePC()
+        public void AdvancePC()
         {
             PC += 2;
+        }
+
+        public ushort GetOpcode()
+        {
+            return (ushort) (Memory[PC] << 8 | Memory[PC + 1]);
         }
 
         /*
@@ -148,21 +162,24 @@ namespace XChip8.Emulators
             {
                 for (int j = 7; j >= 0; j--)
                 {
-                    var old_pixel = ScreenState[col + (7 - j), row + i] ? 1 : 0;
+                    var old_pixel = ScreenState[(col + (7 - j)) % 64, (row + i) % 32] ? 1 : 0;
                     var sprite_pixel = sprite[i] >> j & 1;
                     if (old_pixel == 1 && sprite_pixel == 1)
                         V[0xF] = 1;
                     else
                         V[0xF] = 0;
-                    ScreenState[col + (7 - j), row + i] = (old_pixel ^ sprite_pixel) == 1 ? true : false;
+                    ScreenState[(col + (7 - j)) % 64, (row + i) % 32] = (old_pixel ^ sprite_pixel) == 1 ? true : false;
                 }
             }
+            ScreenStateChanged = true;
         }
 
         private byte[] loadSprite(int n)
         {
             return Memory.Skip(I).Take(n).ToArray();
         }
+
+        public void CLS() => ScreenState = new bool[64, 32];
 
         public void JP(ushort opcode)
         {
@@ -199,12 +216,12 @@ namespace XChip8.Emulators
                 case 3:
                     var kk = getKk(opcode);
                     if (V[x] == (byte) kk)
-                        advancePC();
+                        AdvancePC();
                     break;
                 case 5:
                     var y = getVy(opcode);
                     if (V[x] == V[y])
-                        advancePC();
+                        AdvancePC();
                     break;
             }
 
@@ -218,12 +235,12 @@ namespace XChip8.Emulators
                 case 4:
                     var kk = getKk(opcode);
                     if (V[x] != (byte) kk)
-                        advancePC();
+                        AdvancePC();
                     break;
                 case 9:
                     var y = getVy(opcode);
                     if (V[x] != V[y])
-                        advancePC();
+                        AdvancePC();
                     break;
             }
         }
@@ -371,6 +388,21 @@ namespace XChip8.Emulators
             }
         }
 
+        public void LDBCD(ushort opcode)
+        {
+            var x = getVx(opcode);
+            var num = (int) V[x];
+            var div = 100;
+            var i = 0;
+            while (i < 3)
+            {
+                Memory[I + i] = (byte) (num / div);
+                num %= div;
+                div /= 10;
+                i++;
+            }
+        }
+
         public void LDFI(ushort opcode)
         {
             var x = getVx(opcode);
@@ -385,6 +417,49 @@ namespace XChip8.Emulators
             var sprite = loadSprite(n);
             DrawSprite(sprite, V[x], V[y]);
         }
+
+        public void SKP(ushort opcode)
+        {
+            var x = getVx(opcode);
+            if (input.IsKeyPressed(V[x]))
+                AdvancePC();
+        }
+
+        public void SKNP(ushort opcode)
+        {
+            var x = getVx(opcode);
+            if (!input.IsKeyPressed(V[x]))
+                AdvancePC();
+        }
+
+        public void LDK(ushort opcode)
+        {
+            var x = getVx(opcode);
+            var waiting = true;
+            while (waiting)
+            {
+                SDL.SDL_Event e;
+                if (SDL.SDL_PollEvent(out e) == 1)
+                {
+                    if (e.type == SDL.SDL_EventType.SDL_KEYDOWN)
+                    {
+                        if (input.KeyMap.ContainsKey(e.key.keysym.sym))
+                        {
+                            V[x] = (byte) input.KeyMap[e.key.keysym.sym];
+                            waiting = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void RenderScreen()
+        {
+            renderer.RenderScreen(ScreenState);
+            ScreenStateChanged = false;
+        }
+
+        public void BlankScreen() => renderer.BlankWindow();
 
     }
 }

@@ -15,8 +15,8 @@ namespace XChip8
             var inp = new Input.Input();
             var emu = new Chip8(rend, inp);
             var system = new XChip8.Systems.System(emu);
-            system.test_font();
-            Console.ReadLine();
+            system.Start();
+            // Console.ReadLine();
         }
     }
 }

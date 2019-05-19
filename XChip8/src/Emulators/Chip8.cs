@@ -13,8 +13,8 @@ namespace XChip8.Emulators
         public byte[] Memory { get; private set; }
         public byte[] V { get; private set; }
         public ushort I { get; set; }
-        public byte ST { get; private set; }
-        public byte DT { get; private set; }
+        public byte ST { get; set; }
+        public byte DT { get; set; }
         public ushort PC { get; private set; }
         public bool[, ] ScreenState { get; private set; }
         public short SP { get; private set; }
@@ -28,7 +28,7 @@ namespace XChip8.Emulators
 
         public Chip8(Renderer renderer, Input.Input input)
         {
-            Memory = new byte[4096];
+            Memory = new byte[5000];
             V = new byte[16];
             I = 0x0000;
             ST = 0;
@@ -164,10 +164,8 @@ namespace XChip8.Emulators
                 {
                     var old_pixel = ScreenState[(col + (7 - j)) % 64, (row + i) % 32] ? 1 : 0;
                     var sprite_pixel = sprite[i] >> j & 1;
-                    if (old_pixel == 1 && sprite_pixel == 1)
+                    if ((old_pixel ^ sprite_pixel) == 0 && old_pixel == 1)
                         V[0xF] = 1;
-                    else
-                        V[0xF] = 0;
                     ScreenState[(col + (7 - j)) % 64, (row + i) % 32] = (old_pixel ^ sprite_pixel) == 1 ? true : false;
                 }
             }
@@ -179,7 +177,11 @@ namespace XChip8.Emulators
             return Memory.Skip(I).Take(n).ToArray();
         }
 
-        public void CLS() => ScreenState = new bool[64, 32];
+        public void CLS() 
+        {
+            ScreenState = new bool[64, 32];
+            ScreenStateChanged = true;
+        }
 
         public void JP(ushort opcode)
         {
@@ -343,6 +345,7 @@ namespace XChip8.Emulators
             var b = (byte) rand.Next(255);
             var kk = getKk(opcode);
             var x = getVx(opcode);
+            Console.WriteLine("Random Byte {0}", b);
             V[x] = (byte) (b & kk);
         }
 
@@ -410,12 +413,14 @@ namespace XChip8.Emulators
         }
 
         public void DRW(ushort opcode)
-        {
+        {   
+            V[0xF] = 0;
             var x = getVx(opcode);
             var y = getVy(opcode);
             var n = opcode & 0x000F;
             var sprite = loadSprite(n);
             DrawSprite(sprite, V[x], V[y]);
+            ScreenStateChanged = true;
         }
 
         public void SKP(ushort opcode)
@@ -455,6 +460,7 @@ namespace XChip8.Emulators
 
         public void RenderScreen()
         {
+            //renderer.BlankWindow();
             renderer.RenderScreen(ScreenState);
             ScreenStateChanged = false;
         }

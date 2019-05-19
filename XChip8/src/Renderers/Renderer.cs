@@ -27,7 +27,7 @@ namespace XChip8.Renderers
                 this.width,
                 this.height,
                 SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL
-                |SDL.SDL_WindowFlags.SDL_WINDOW_ALWAYS_ON_TOP
+                |SDL.SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS
             );
             sdlRenderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_SOFTWARE);
             Collision = false;
@@ -50,35 +50,35 @@ namespace XChip8.Renderers
             rect.h = 10;
             rect.w = 10;
             SDL.SDL_SetRenderDrawColor(sdlRenderer, 0xAA, 0xAA, 0xFF, 0xFF);
-            SDL.SDL_RenderDrawRect(sdlRenderer, ref rect);
             SDL.SDL_RenderFillRect(sdlRenderer, ref rect);
-            SDL.SDL_RenderPresent(sdlRenderer);
         }
 
         public void ClearPixel(int col, int row)
         {
             SDL.SDL_SetRenderDrawColor(sdlRenderer, 0x00, 0x00, 0x00, 0xFF);
-            //SDL.SDL_Rect rect;
-            pixelRect.x = col * 10;
-            pixelRect.y = row * 10;
-            // rect.h = 10;
-            // rect.w = 10;
-            SDL.SDL_RenderDrawRect(sdlRenderer, ref pixelRect);
-            SDL.SDL_RenderFillRect(sdlRenderer, ref pixelRect);
-            SDL.SDL_RenderPresent(sdlRenderer);
+            SDL.SDL_Rect rect;
+            rect.x = col * 10;
+            rect.y = row * 10;
+            rect.h = 10;
+            rect.w = 10;
+            SDL.SDL_RenderFillRect(sdlRenderer, ref rect);
         }
 
         public void RenderScreen(bool[,] ScreenState)
         {
-            BlankWindow();
+            // BlankWindow();
             for (var col = 0; col < 64; col++)
             {
                 for (var row = 0; row < 32; row++)
                 {
                     if (ScreenState[col, row])
                         SetPixel(col, row);
+                    else
+                        ClearPixel(col, row);
                 }
             }
+
+            SDL.SDL_RenderPresent(sdlRenderer);
         }
     }
 }

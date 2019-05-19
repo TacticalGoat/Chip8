@@ -34,11 +34,12 @@ namespace XChip8.Renderers
             pixelRect = new SDL.SDL_Rect();
             pixelRect.h = 10;
             pixelRect.w = 10;
+            BlankWindow();
         }
         public void BlankWindow()
         {
             SDL.SDL_RenderSetLogicalSize(sdlRenderer, width, height);
-            SDL.SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 0x2F);
+            SDL.SDL_SetRenderDrawColor(sdlRenderer, 0x49, 0x0E, 0x61, 0xFF);
             SDL.SDL_RenderClear(sdlRenderer);
             SDL.SDL_RenderPresent(sdlRenderer);
         }
@@ -49,13 +50,13 @@ namespace XChip8.Renderers
             rect.y = row * 10;
             rect.h = 10;
             rect.w = 10;
-            SDL.SDL_SetRenderDrawColor(sdlRenderer, 0xAA, 0xAA, 0xFF, 0xFF);
+            SDL.SDL_SetRenderDrawColor(sdlRenderer, 0xFA, 0x05, 0x6F, 0xFF);
             SDL.SDL_RenderFillRect(sdlRenderer, ref rect);
         }
 
         public void ClearPixel(int col, int row)
         {
-            SDL.SDL_SetRenderDrawColor(sdlRenderer, 0x00, 0x00, 0x00, 0xFF);
+            SDL.SDL_SetRenderDrawColor(sdlRenderer, 0x49, 0x0E, 0x61, 0xFF);
             SDL.SDL_Rect rect;
             rect.x = col * 10;
             rect.y = row * 10;

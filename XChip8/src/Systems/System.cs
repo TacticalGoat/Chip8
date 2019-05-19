@@ -27,7 +27,7 @@ namespace XChip8.Systems
             this.emulator = emulator;
             // this.input = new Input.Input();
             SDL.SDL_Init(SDL.SDL_INIT_TIMER);
-            emulator.LoadRom("/home/arjun/Downloads/Chip8Roms/SpaceInvaders.ch8");
+            emulator.LoadRom("/home/arjun/Downloads/Chip8Roms/Trip8.ch8");
         }
 
         public void Start()

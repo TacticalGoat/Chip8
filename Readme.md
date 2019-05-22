@@ -15,7 +15,7 @@ A Chip8 interpreter written in C#, .NET Core 2 and SDL2
 ## Screenshots
 
 ### Trip8 Demo
-<img src="ReadmeAssets/trip8.gif" alt="Chip8 Emulator" height="320" width="640" />
+<img src="ReadmeAssets/trip8_small.gif" height="320" width="640" />
 
 ### Space Invaders
-<img src="ReadmeAssets/space_invadersmovie.gif" height="320" width="640"/>
+<img src="ReadmeAssets/space_invaders_small.gif" height="320" width="640"/>

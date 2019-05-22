@@ -9,8 +9,7 @@ A Chip8 interpreter written in C#, .NET Core 2 and SDL2
 1. Add a CLI/UI
 2. Add options to tweak clock speed and Color Pallete
 3. Make the emulator Cycle Accurate.
-4. Improve Flickering.
-5. Super Chip8 instructions.
+4. Super Chip8 instructions.
 
 ## Screenshots
 

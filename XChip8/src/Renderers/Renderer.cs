@@ -81,5 +81,11 @@ namespace XChip8.Renderers
 
             SDL.SDL_RenderPresent(sdlRenderer);
         }
+
+        ~Renderer()
+        {
+            SDL.SDL_DestroyRenderer(sdlRenderer);
+            SDL.SDL_DestroyWindow(window);
+        }
     }
 }

@@ -5,9 +5,6 @@ A Chip8 interpreter written in C#, .NET Core 2 and SDL2
 ## What's Implemented
 - All Instructions except SYS nnn
 
-## What's Not Implemented
-- Sound
-
 ## Things to do
 1. Add a CLI/UI
 2. Add options to tweak clock speed and Color Pallete

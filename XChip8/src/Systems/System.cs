@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using SDL2;
+using XChip8.Audio;
 using XChip8.Emulators;
 using XChip8.Input;
 using XChip8.Renderers;
@@ -13,7 +13,7 @@ namespace XChip8.Systems
     {
         private Chip8 emulator;
         // private Input.Input input;
-
+        private Buzz buzz;
         private const int TICKS_PER_SECOND = 500;
         private const int SKIP_TICKS = 1000 / TICKS_PER_SECOND;
 
@@ -22,12 +22,13 @@ namespace XChip8.Systems
         private const int TIMER_SKIP_TICKS = 1000 / TIMER_TICKS;
         private const int MAX_FRAME_SKIP = 5;
 
-        public System(Chip8 emulator)
+        public System(Chip8 emulator, Buzz buzz)
         {
             this.emulator = emulator;
+            this.buzz = buzz;
             // this.input = new Input.Input();
             SDL.SDL_Init(SDL.SDL_INIT_TIMER);
-            emulator.LoadRom("/home/arjun/Downloads/Chip8Roms/Trip8.ch8");
+            emulator.LoadRom("/home/arjun/Downloads/Chip8Roms/SpaceInvaders.ch8");
         }
 
         public void Start()
@@ -56,7 +57,6 @@ namespace XChip8.Systems
                                         running = false;
                                         break;
                                     default:
-                                        //Console.WriteLine("KeyPressed {0}", e.key.keysym.sym.ToString());
                                         emulator.input.KeyDown(e.key.keysym.sym);
                                         break;
                                 }
@@ -76,10 +76,19 @@ namespace XChip8.Systems
                 {
                     if (emulator.DT > 0)
                         emulator.DT -= 1;
+                    
                     if (emulator.ST > 0)
+                    {
                         emulator.ST -= 1;
+                        if(SDL_mixer.Mix_Playing(-1) == 0)
+                            buzz.Play();
+                    }
+
+                    if(emulator.ST == 0 && SDL_mixer.Mix_Playing(-1) == 1)
+                        buzz.Stop();
+                    
                     timer_loops++;
-                    next_timer_tick += SKIP_TICKS;
+                    next_timer_tick += TIMER_TICKS;
                 }
                 if (true)
                 {
@@ -87,6 +96,7 @@ namespace XChip8.Systems
                     render();
                 }
             }
+
         }
 
         private void update()
